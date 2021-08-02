@@ -1,6 +1,5 @@
 library(rJava)
 library(data.table)
-library(magrittr)
 
 # initialise the JVM -----------------------------------------------------------
 .jinit(classpath = "java/differentialprivacy.jar")
@@ -19,7 +18,9 @@ hours <- sort(unique(visits$hour))
 counts <- lapply(hours, function(x) {
   cls <- "com.google.privacy.differentialprivacy.Count"
   J(cls)$builder()$epsilon(log(3))$maxPartitionsContributed(1L)$build()
-}) %>% setNames(., as.character(hours))
+}) 
+
+names(counts) <- as.character(hours)
 
 for (x in as.character(visits$hour)) {
   counts[[x]]$increment()
@@ -27,5 +28,5 @@ for (x in as.character(visits$hour)) {
 
 private_counts <- data.table(
   hour = hours,
-  nvisit = sapply(counts, function(x) { x$computeResult() })
+  nvisit = sapply(counts, function(x) x$computeResult() )
 )
